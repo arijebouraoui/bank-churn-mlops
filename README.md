@@ -98,12 +98,6 @@ Predictions are cached for faster responses.
 
 
 
-
-
-
-
-
-
 Author
 Arij Bouraoui – Bank Churn Prediction Project for Déploiement de modèle IA Workshop
 
