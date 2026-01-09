@@ -1,0 +1,5 @@
+outs:
+- md5: 0097b337b07dff1b8b3a80d701f15bf7
+  size: 589233
+  hash: md5
+  path: bank_churn.csv
