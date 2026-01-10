@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # API Service
+  api:
+    build: .
+    container_name: bank-churn-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model:/app/model
+    environment:
+      - MODEL_PATH=/app/model/churn_model.pkl
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+  # MLflow Server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.8.1
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow/mlruns/mlflow.db --default-artifact-root /mlflow/mlruns
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+networks:
+  mlops-network:
+    driver: bridge
