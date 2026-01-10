@@ -1,0 +1,56 @@
+name: Continuous Training (CT)
+
+# Déclenché automatiquement chaque dimanche à 2h du matin
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Every Sunday at 2 AM UTC
+  workflow_dispatch:  # Permet de lancer manuellement
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Pull data from DVC
+        run: |
+          pip install dvc
+          # Configure DVC (would need remote storage in production)
+          echo "Note: In production, configure DVC remote storage"
+          
+      - name: Run training (smoke test - quick validation)
+        run: |
+          python train_model.py
+          
+      - name: Run ZenML pipeline (quick validation)
+        run: |
+          pip install "zenml[local]"
+          python zenml_pipeline.py
+          
+      - name: Archive training results
+        uses: actions/upload-artifact@v3
+        with:
+          name: training-results
+          path: |
+            model/*.pkl
+            model/*.json
+            *.png
+          retention-days: 30
+          
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "⚠️ Continuous Training failed!"
+          echo "Check logs for details"
