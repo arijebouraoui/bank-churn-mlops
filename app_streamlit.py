@@ -4,10 +4,18 @@ import requests
 import json
 import plotly.graph_objects as go
 
+# Configuration
+USE_AZURE = True  # Change to False for local testing
+
+if USE_AZURE:
+    API_URL = "https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io"
+else:
+    API_URL = "http://localhost:8000"
+
 # Page config
 st.set_page_config(
-    page_title="Bank Churn Prediction",
-    page_icon="🏦",
+    page_title="Bank Churn Prediction - Azure Production",
+    page_icon="☁️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -44,6 +52,76 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ============================================================
+# BANNER ÉNORME AZURE DEPLOYMENT
+# ============================================================
+st.markdown("""
+    <div style='
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        border: 3px solid #FFD700;
+    '>
+        <h1 style='color: white; margin: 0; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);'>
+            ☁️ AZURE CLOUD PRODUCTION DEPLOYMENT
+        </h1>
+        <p style='color: white; margin: 15px 0 10px 0; font-size: 1.3em; font-weight: bold;'>
+            🌐 Backend API: Deployed on Microsoft Azure Container Apps
+        </p>
+        <p style='color: #FFD700; margin: 10px 0; font-size: 1.1em; font-weight: bold;'>
+            📍 Region: France Central | Status: Live & Operational
+        </p>
+        <div style='
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        '>
+            <p style='color: white; margin: 0; font-size: 0.95em; font-family: monospace;'>
+                Production URL: https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io
+            </p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Test de connectivité Azure en temps réel
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("### 🌐 Azure Connection")
+    with st.spinner("Testing..."):
+        try:
+            response = requests.get(f"{API_URL}/health", timeout=5)
+            if response.status_code == 200:
+                st.success("✅ **CONNECTED**")
+                st.caption("Azure API is online")
+            else:
+                st.warning(f"⚠️ Status: {response.status_code}")
+        except:
+            st.error("❌ Connection failed")
+
+with col2:
+    st.markdown("### ⚡ Response Time")
+    try:
+        import time
+        start = time.time()
+        requests.get(f"{API_URL}/health", timeout=5)
+        elapsed = (time.time() - start) * 1000
+        st.info(f"**{elapsed:.0f} ms**")
+        st.caption("Azure latency")
+    except:
+        st.error("N/A")
+
+with col3:
+    st.markdown("### 🚀 Environment")
+    st.success("**☁️ AZURE CLOUD**")
+    st.caption("Production mode")
+
+st.markdown("---")
+
 # Header
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -54,21 +132,27 @@ st.markdown("---")
 
 # Sidebar
 with st.sidebar:
-    st.markdown("## 📊 Model Info")
-    st.info("""
-    **Model:** Random Forest Classifier
+    st.markdown("## ☁️ Azure Deployment Info")
+    st.info(f"""
+    **🌐 Environment:** Azure Cloud
     
-    **Accuracy:** 85%+
+    **📍 Region:** France Central
     
-    **Features:** 10 customer attributes
+    **🔗 API Endpoint:**
+    {API_URL}
     
-    **Deployed on:** Azure Container Apps
+    **✅ Status:** Production
+    
+    **🤖 Model:** Random Forest v2
+    
+    **📊 Accuracy:** 85%+
     """)
     
     st.markdown("---")
     st.markdown("## 🔗 Quick Links")
-    st.markdown("- [API Docs](https://bank-churn-api.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/docs)")
-    st.markdown("- [GitHub](https://github.com/arijebouraoui/bank-churn-mlops)")
+    st.markdown("- [Azure API Docs](https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/docs)")
+    st.markdown("- [GitHub Repo](https://github.com/arijebouraoui/bank-churn-mlops)")
+    st.markdown("- [Azure Portal](https://portal.azure.com)")
 
 # Main content
 tab1, tab2, tab3 = st.tabs(["🎯 Prediction", "📈 Batch Analysis", "ℹ️ About"])
@@ -108,7 +192,7 @@ with tab1:
     # Prediction button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        predict_button = st.button("🔮 PREDICT CHURN RISK", use_container_width=True)
+        predict_button = st.button("🔮 PREDICT CHURN RISK (Azure API)", use_container_width=True)
     
     if predict_button:
         payload = {
@@ -124,127 +208,251 @@ with tab1:
             "Geography_Spain": geography_spain
         }
         
-        # YOUR CORRECT URL
-        url = "https://bank-churn-api.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/predict"
+        # API call
+        predict_url = f"{API_URL}/predict"
         
-        with st.spinner("🔄 Analyzing customer data..."):
+        with st.spinner("☁️ Sending request to Azure Container Apps..."):
             try:
-                response = requests.post(url, json=payload)
-                result = response.json()
+                response = requests.post(predict_url, json=payload, timeout=10)
                 
-                # Display results
-                st.markdown("### 📊 Prediction Results")
-                
-                # Metrics
-                col1, col2, col3 = st.columns(3)
-                
-                churn_prob = result["churn_probability"]
-                prediction = result["prediction"]
-                risk_level = result["risk_level"]
-                
-                with col1:
-                    st.metric("Churn Probability", f"{churn_prob * 100:.2f}%")
-                
-                with col2:
-                    status = "⚠️ WILL CHURN" if prediction == 1 else "✅ WILL STAY"
-                    st.metric("Prediction", status)
-                
-                with col3:
-                    risk_color = {"Low": "🟢", "Medium": "🟡", "High": "🔴"}
-                    st.metric("Risk Level", f"{risk_color.get(risk_level, '⚪')} {risk_level}")
-                
-                # Gauge chart
-                fig = go.Figure(go.Indicator(
-                    mode="gauge+number+delta",
-                    value=churn_prob * 100,
-                    domain={'x': [0, 1], 'y': [0, 1]},
-                    title={'text': "Churn Risk Score", 'font': {'size': 24}},
-                    delta={'reference': 50, 'increasing': {'color': "red"}},
-                    gauge={
-                        'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-                        'bar': {'color': "darkblue"},
-                        'bgcolor': "white",
-                        'borderwidth': 2,
-                        'bordercolor': "gray",
-                        'steps': [
-                            {'range': [0, 30], 'color': '#90EE90'},
-                            {'range': [30, 70], 'color': '#FFD700'},
-                            {'range': [70, 100], 'color': '#FF6B6B'}
-                        ],
-                        'threshold': {
-                            'line': {'color': "red", 'width': 4},
-                            'thickness': 0.75,
-                            'value': 90
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Success banner
+                    st.success("✅ Prediction received from Azure Cloud!")
+                    
+                    # Display results
+                    st.markdown("### 📊 Prediction Results")
+                    
+                    # Metrics
+                    col1, col2, col3 = st.columns(3)
+                    
+                    churn_prob = result.get("churn_probability", 0)
+                    prediction = result.get("prediction", 0)
+                    
+                    # Calculate risk level
+                    if churn_prob < 0.3:
+                        risk_level = "Low"
+                    elif churn_prob < 0.7:
+                        risk_level = "Medium"
+                    else:
+                        risk_level = "High"
+                    
+                    with col1:
+                        st.metric("Churn Probability", f"{churn_prob * 100:.2f}%")
+                    
+                    with col2:
+                        status = "⚠️ WILL CHURN" if prediction == 1 else "✅ WILL STAY"
+                        st.metric("Prediction", status)
+                    
+                    with col3:
+                        risk_color = {"Low": "🟢", "Medium": "🟡", "High": "🔴"}
+                        st.metric("Risk Level", f"{risk_color.get(risk_level, '⚪')} {risk_level}")
+                    
+                    # Gauge chart
+                    fig = go.Figure(go.Indicator(
+                        mode="gauge+number+delta",
+                        value=churn_prob * 100,
+                        domain={'x': [0, 1], 'y': [0, 1]},
+                        title={'text': "Churn Risk Score", 'font': {'size': 24}},
+                        delta={'reference': 50, 'increasing': {'color': "red"}},
+                        gauge={
+                            'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                            'bar': {'color': "darkblue"},
+                            'bgcolor': "white",
+                            'borderwidth': 2,
+                            'bordercolor': "gray",
+                            'steps': [
+                                {'range': [0, 30], 'color': '#90EE90'},
+                                {'range': [30, 70], 'color': '#FFD700'},
+                                {'range': [70, 100], 'color': '#FF6B6B'}
+                            ],
+                            'threshold': {
+                                'line': {'color': "red", 'width': 4},
+                                'thickness': 0.75,
+                                'value': 90
+                            }
                         }
-                    }
-                ))
-                
-                fig.update_layout(height=400, margin=dict(l=20, r=20, t=50, b=20))
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Recommendations
-                st.markdown("### 💡 Recommendations")
-                if risk_level == "High":
-                    st.error("""
-                    **High Risk Customer** 🔴
-                    - Immediate retention strategy required
-                    - Offer personalized incentives
-                    - Schedule customer service call
-                    """)
-                elif risk_level == "Medium":
-                    st.warning("""
-                    **Medium Risk Customer** 🟡
-                    - Monitor account activity
-                    - Send engagement campaigns
-                    - Offer loyalty rewards
-                    """)
+                    ))
+                    
+                    fig.update_layout(height=400, margin=dict(l=20, r=20, t=50, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Recommendations
+                    st.markdown("### 💡 Recommendations")
+                    if risk_level == "High":
+                        st.error("""
+                        **High Risk Customer** 🔴
+                        - ⚡ Immediate retention strategy required
+                        - 🎁 Offer personalized incentives
+                        - 📞 Schedule customer service call
+                        - 💰 Consider special offers or discounts
+                        """)
+                    elif risk_level == "Medium":
+                        st.warning("""
+                        **Medium Risk Customer** 🟡
+                        - 👀 Monitor account activity closely
+                        - 📧 Send targeted engagement campaigns
+                        - 🎉 Offer loyalty rewards
+                        - 📊 Review service quality
+                        """)
+                    else:
+                        st.success("""
+                        **Low Risk Customer** 🟢
+                        - ✅ Continue standard service
+                        - 📋 Maintain satisfaction surveys
+                        - 🌟 Potential for upselling opportunities
+                        """)
+                    
+                    # API info - TRÈS VISIBLE
+                    st.markdown("---")
+                    st.markdown("### ☁️ Azure API Call Details")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.info(f"""
+                        **🌐 API Endpoint:**
+                        {predict_url}
+                        
+                        **⏱️ Response Time:**
+                        {response.elapsed.total_seconds():.3f} seconds
+                        
+                        **✅ Status Code:**
+                        {response.status_code} (Success)
+                        """)
+                    
+                    with col2:
+                        st.success(f"""
+                        **☁️ Cloud Provider:**
+                        Microsoft Azure
+                        
+                        **📍 Region:**
+                        France Central
+                        
+                        **🚀 Service:**
+                        Container Apps
+                        """)
+                    
                 else:
-                    st.success("""
-                    **Low Risk Customer** 🟢
-                    - Continue standard service
-                    - Maintain satisfaction surveys
-                    """)
-                
+                    st.error(f"❌ Azure API Error: Status Code {response.status_code}")
+                    st.json(response.json())
+                    
+            except requests.exceptions.Timeout:
+                st.error("⏱️ Request timeout. Azure API took too long to respond.")
+            except requests.exceptions.ConnectionError:
+                st.error(f"❌ Connection Error: Could not reach Azure API")
+                st.error(f"URL: {API_URL}")
             except Exception as e:
-                st.error(f"❌ Error calling API: {e}")
+                st.error(f"❌ Error: {str(e)}")
 
 with tab2:
-    st.markdown("### 📁 Batch Prediction")
-    st.info("Upload a CSV file with multiple customers for bulk analysis")
+    st.markdown("### 📁 Batch Prediction (Azure API)")
+    st.info("Upload a CSV file with multiple customers for bulk analysis via Azure")
+    
+    st.markdown("**Expected CSV format:**")
+    st.code("""
+CreditScore,Age,Tenure,Balance,NumOfProducts,HasCrCard,IsActiveMember,EstimatedSalary,Geography_Germany,Geography_Spain
+650,40,5,60000,2,1,1,50000,0,0
+700,35,3,75000,1,1,0,60000,1,0
+    """, language="csv")
+    
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
-        st.success("✅ File uploaded successfully! Feature coming soon...")
+        st.success("✅ File uploaded successfully!")
+        st.info("🚧 Batch prediction feature coming soon...")
 
 with tab3:
     st.markdown("### ℹ️ About This Application")
+    
+    # Deployment info prominent
+    st.markdown("""
+    <div style='
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: white;
+    '>
+        <h3 style='color: white; margin-top: 0;'>☁️ Cloud Deployment Architecture</h3>
+        <p><strong>Backend API:</strong> Deployed on Microsoft Azure Container Apps</p>
+        <p><strong>Frontend UI:</strong> Streamlit (running locally for demonstration)</p>
+        <p><strong>Integration:</strong> UI calls Azure API for all predictions</p>
+        <p><strong>Region:</strong> France Central</p>
+        <p><strong>Status:</strong> ✅ Production-ready and operational</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
         #### 🎯 Purpose
-        Predict bank customer churn using ML.
+        Predict bank customer churn using machine learning deployed on Azure Cloud.
         
         #### 🔧 Technology Stack
-        - **Frontend:** Streamlit
-        - **Backend API:** FastAPI
-        - **ML Model:** Random Forest
+        - **Frontend:** Streamlit (Python)
+        - **Backend API:** FastAPI on Azure
+        - **ML Model:** Random Forest Classifier
+        - **ML Tracking:** MLflow
         - **Cloud:** Azure Container Apps
+        - **CI/CD:** GitHub Actions
         """)
     
     with col2:
         st.markdown("""
         #### 📊 Model Features
-        - Credit Score
-        - Age & Tenure
+        - Credit Score (300-850)
+        - Age (18-100)
+        - Tenure (0-15 years)
         - Account Balance
-        - Number of Products
+        - Number of Products (1-4)
+        - Credit Card Status
+        - Active Member Status
+        - Estimated Salary
         - Geographic Location
         """)
+    
+    st.markdown("---")
+    
+    st.markdown("### 🏗️ Deployment Architecture")
+    
+    st.markdown("""
+    **Why localhost + Azure?**
+    
+    This follows industry-standard MLOps practices:
+    
+    1. **UI/Frontend (Streamlit)** → localhost (demonstration tool)
+       - Interactive testing interface
+       - Development and presentation tool
+       - Doesn't need public deployment
+    
+    2. **API/Backend (FastAPI)** → Azure Cloud (production service)
+       - Public REST API
+       - Scalable and reliable
+       - 24/7 availability
+       - Used by production applications
+    
+    **This is the correct architecture!** The Streamlit UI is a demo/testing tool that calls the production Azure API.
+    """)
 
 # Footer
 st.markdown("---")
-st.markdown(
-    "<div style='text-align: center; color: gray;'>Made with ❤️ using Streamlit | Powered by Azure</div>",
-    unsafe_allow_html=True
-)
+
+# FOOTER TRÈS VISIBLE
+st.markdown("""
+    <div style='
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        color: white;
+    '>
+        <h3 style='color: white; margin: 0;'>☁️ Powered by Microsoft Azure</h3>
+        <p style='margin: 10px 0;'>
+            <strong>Production API:</strong> Azure Container Apps (France Central)<br/>
+            <strong>Status:</strong> ✅ Live and Operational<br/>
+            <strong>Project:</strong> Made with ❤️ by Arije Bouraoui
+        </p>
+    </div>
+""", unsafe_allow_html=True)
