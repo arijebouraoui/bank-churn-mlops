@@ -3,18 +3,19 @@ import streamlit as st
 import requests
 import json
 import plotly.graph_objects as go
+import os
 
-# Configuration
-USE_AZURE = True  # Change to False for local testing
+# Configuration - Read from environment variables
+USE_AZURE = os.getenv("USE_AZURE", "True").lower() == "true"
 
 if USE_AZURE:
-    API_URL = "https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io"
+    API_URL = os.getenv("API_URL", "https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io")
 else:
-    API_URL = "http://localhost:8000"
+    API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # Page config
 st.set_page_config(
-    page_title="Bank Churn Prediction - Azure Production",
+    page_title="Bank Churn Prediction v2 - Enhanced Azure",
     page_icon="☁️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -53,7 +54,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# BANNER ÉNORME AZURE DEPLOYMENT
+# BANNER ÉNORME AZURE DEPLOYMENT V2
 # ============================================================
 st.markdown("""
     <div style='
@@ -66,13 +67,13 @@ st.markdown("""
         border: 3px solid #FFD700;
     '>
         <h1 style='color: white; margin: 0; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);'>
-            ☁️ AZURE CLOUD PRODUCTION DEPLOYMENT
+            ☁️ AZURE CLOUD PRODUCTION DEPLOYMENT v2.0
         </h1>
         <p style='color: white; margin: 15px 0 10px 0; font-size: 1.3em; font-weight: bold;'>
             🌐 Backend API: Deployed on Microsoft Azure Container Apps
         </p>
         <p style='color: #FFD700; margin: 10px 0; font-size: 1.1em; font-weight: bold;'>
-            📍 Region: France Central | Status: Live & Operational
+            📍 Region: France Central | Status: Live & Operational | Version: 2.0 🆕
         </p>
         <div style='
             background: rgba(255,255,255,0.2);
@@ -117,7 +118,7 @@ with col2:
 
 with col3:
     st.markdown("### 🚀 Environment")
-    st.success("**☁️ AZURE CLOUD**")
+    st.success("**☁️ AZURE CLOUD v2.0**")
     st.caption("Production mode")
 
 st.markdown("---")
@@ -125,7 +126,7 @@ st.markdown("---")
 # Header
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.markdown("<h1>🏦 Bank Churn Predictor</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>🏦 Bank Churn Predictor v2.0</h1>", unsafe_allow_html=True)
     st.markdown("### Predict customer churn risk with AI-powered analytics")
 
 st.markdown("---")
@@ -146,6 +147,8 @@ with st.sidebar:
     **🤖 Model:** Random Forest v2
     
     **📊 Accuracy:** 85%+
+    
+    **🆕 Version:** 2.0 Enhanced
     """)
     
     st.markdown("---")
@@ -192,7 +195,7 @@ with tab1:
     # Prediction button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        predict_button = st.button("🔮 PREDICT CHURN RISK (Azure API)", use_container_width=True)
+        predict_button = st.button("🔮 PREDICT CHURN RISK (Azure API v2)", use_container_width=True)
     
     if predict_button:
         payload = {
@@ -219,7 +222,7 @@ with tab1:
                     result = response.json()
                     
                     # Success banner
-                    st.success("✅ Prediction received from Azure Cloud!")
+                    st.success("✅ Prediction received from Azure Cloud v2.0!")
                     
                     # Display results
                     st.markdown("### 📊 Prediction Results")
@@ -331,7 +334,7 @@ with tab1:
                         France Central
                         
                         **🚀 Service:**
-                        Container Apps
+                        Container Apps v2.0
                         """)
                     
                 else:
@@ -374,12 +377,13 @@ with tab3:
         margin-bottom: 20px;
         color: white;
     '>
-        <h3 style='color: white; margin-top: 0;'>☁️ Cloud Deployment Architecture</h3>
+        <h3 style='color: white; margin-top: 0;'>☁️ Cloud Deployment Architecture v2.0</h3>
         <p><strong>Backend API:</strong> Deployed on Microsoft Azure Container Apps</p>
-        <p><strong>Frontend UI:</strong> Streamlit (running locally for demonstration)</p>
+        <p><strong>Frontend UI:</strong> Streamlit v2.0 deployed on Azure Container Apps</p>
         <p><strong>Integration:</strong> UI calls Azure API for all predictions</p>
         <p><strong>Region:</strong> France Central</p>
         <p><strong>Status:</strong> ✅ Production-ready and operational</p>
+        <p><strong>Version:</strong> 2.0 Enhanced 🆕</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -391,7 +395,7 @@ with tab3:
         Predict bank customer churn using machine learning deployed on Azure Cloud.
         
         #### 🔧 Technology Stack
-        - **Frontend:** Streamlit (Python)
+        - **Frontend:** Streamlit v2.0 (Python)
         - **Backend API:** FastAPI on Azure
         - **ML Model:** Random Forest Classifier
         - **ML Tracking:** MLflow
@@ -418,22 +422,21 @@ with tab3:
     st.markdown("### 🏗️ Deployment Architecture")
     
     st.markdown("""
-    **Why localhost + Azure?**
+    **Full Azure Cloud Deployment v2.0:**
     
-    This follows industry-standard MLOps practices:
+    1. **UI/Frontend (Streamlit v2.0)** → Azure Container Apps
+       - Interactive web interface
+       - Publicly accessible
+       - Auto-scaling
+       - Enhanced version
     
-    1. **UI/Frontend (Streamlit)** → localhost (demonstration tool)
-       - Interactive testing interface
-       - Development and presentation tool
-       - Doesn't need public deployment
-    
-    2. **API/Backend (FastAPI)** → Azure Cloud (production service)
+    2. **API/Backend (FastAPI)** → Azure Container Apps
        - Public REST API
        - Scalable and reliable
        - 24/7 availability
-       - Used by production applications
+       - Production-ready
     
-    **This is the correct architecture!** The Streamlit UI is a demo/testing tool that calls the production Azure API.
+    **Professional MLOps architecture with both services on Azure Cloud!**
     """)
 
 # Footer
@@ -452,6 +455,7 @@ st.markdown("""
         <p style='margin: 10px 0;'>
             <strong>Production API:</strong> Azure Container Apps (France Central)<br/>
             <strong>Status:</strong> ✅ Live and Operational<br/>
+            <strong>Version:</strong> 2.0 Enhanced 🆕<br/>
             <strong>Project:</strong> Made with ❤️ by Arije Bouraoui
         </p>
     </div>

@@ -6,8 +6,9 @@
 [![MLflow](https://img.shields.io/badge/MLflow-2.8-orange.svg)](https://mlflow.org/)
 [![ZenML](https://img.shields.io/badge/ZenML-0.93-purple.svg)](https://zenml.io/)
 [![DVC](https://img.shields.io/badge/DVC-3.66-red.svg)](https://dvc.org/)
+[![Azure](https://img.shields.io/badge/Azure-Deployed-0078D4.svg)](https://azure.microsoft.com/)
 
-**Complete MLOps pipeline for predicting bank customer churn using Random Forest, with automated training, deployment, versioning, and monitoring.**
+**Complete MLOps pipeline for predicting bank customer churn using Random Forest, with automated training, deployment, versioning, and monitoring on Azure Cloud.**
 
 ---
 
@@ -16,6 +17,7 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Features](#features)
+- [Live Demo](#live-demo)
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -24,6 +26,7 @@
 - [ML Pipeline (ZenML)](#ml-pipeline-zenml)
 - [Hyperparameter Optimization (Optuna)](#hyperparameter-optimization-optuna)
 - [Docker Deployment](#docker-deployment)
+- [Azure Cloud Deployment](#azure-cloud-deployment)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [API Documentation](#api-documentation)
 - [Model Versioning](#model-versioning)
@@ -42,17 +45,18 @@ This project implements a complete **MLOps workflow** for predicting bank custom
 - **Pipeline Orchestration** with ZenML
 - **Hyperparameter Optimization** with Optuna
 - **Containerization** with Docker & Docker Compose
-- **CI/CD** with GitHub Actions
-- **API Deployment** on Azure Container Apps
+- **CI/CD** with GitLab CI
+- **Cloud Deployment** on Azure Container Apps
 - **Monitoring** with Azure Application Insights
 - **Model Versioning** with v1/v2 and rollback capabilities
+- **Interactive UI** with Streamlit deployed on Azure
 
 ---
 
 ## 🏗️ Architecture
 ```
 ┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   GitHub    │─────▶│GitHub Actions│─────▶│   Docker    │
+│   GitHub    │─────▶│  GitLab CI   │─────▶│   Docker    │
 │ Repository  │      │   CI/CD      │      │   Build     │
 └─────────────┘      └──────────────┘      └─────────────┘
                               │                     │
@@ -66,13 +70,15 @@ This project implements a complete **MLOps workflow** for predicting bank custom
 ┌─────────────┐      ┌──────────────┐      ┌─────────────┐
 │     DVC     │      │    ZenML     │      │   Azure     │
 │Data Version │◀────▶│  Pipelines   │─────▶│Container App│
-└─────────────┘      └──────────────┘      └─────────────┘
-       │                     │                     │
-       ▼                     ▼                     ▼
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   MLflow    │      │   Optuna     │      │  FastAPI    │
-│Experiments  │      │Optimization  │      │   Serving   │
-└─────────────┘      └──────────────┘      └─────────────┘
+└─────────────┘      └──────────────┘      │   (API)     │
+       │                     │              └─────────────┘
+       ▼                     ▼                     │
+┌─────────────┐      ┌──────────────┐             ▼
+│   MLflow    │      │   Optuna     │      ┌─────────────┐
+│Experiments  │      │Optimization  │      │   Azure     │
+└─────────────┘      └──────────────┘      │Container App│
+                                            │ (Streamlit) │
+                                            └─────────────┘
                                                     │
                                                     ▼
                                            ┌─────────────┐
@@ -99,9 +105,10 @@ This project implements a complete **MLOps workflow** for predicting bank custom
 - ✅ **Optuna**: Automated hyperparameter tuning (10 trials)
 - ✅ **Docker**: Containerized application
 - ✅ **Docker Compose**: Multi-service orchestration
-- ✅ **GitHub Actions**: Automated CI/CD
-- ✅ **Azure Deployment**: Production-ready API
+- ✅ **GitLab CI**: Automated CI/CD pipeline
+- ✅ **Azure Deployment**: Production-ready API and UI
 - ✅ **Monitoring**: Application Insights integration
+- ✅ **Version Management**: v1 → v2 → Rollback demo
 
 ### 🌐 API Features
 - `/health` - Health check endpoint
@@ -111,11 +118,34 @@ This project implements a complete **MLOps workflow** for predicting bank custom
 - `/redoc` - ReDoc documentation
 
 ### 🎨 User Interface
-- **Streamlit Dashboard**: Professional web interface with:
+- **Streamlit Dashboard**: Professional web interface deployed on Azure with:
   - Interactive input forms
-  - Real-time predictions
+  - Real-time predictions calling Azure API
   - Risk visualization (gauge charts)
   - Recommendations based on risk level
+  - Azure Cloud status indicators
+  - **Production URL**: https://bank-churn-streamlit.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/
+
+---
+
+## 🌐 Live Demo
+
+### **Try it Live on Azure Cloud! ☁️**
+
+**Streamlit UI (Frontend):**
+```
+https://bank-churn-streamlit.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/
+```
+
+**FastAPI Backend:**
+```
+https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io
+```
+
+**API Documentation:**
+```
+https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/docs
+```
 
 ---
 
@@ -126,6 +156,7 @@ bank-churn-mlops/
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml          # GitHub Actions pipeline
+├── .gitlab-ci.yml             # GitLab CI/CD pipeline
 ├── .zen/                      # ZenML configuration
 ├── app/
 │   ├── __init__.py
@@ -146,9 +177,10 @@ bank-churn-mlops/
 ├── .dockerignore
 ├── .dvcignore
 ├── .gitignore
-├── app_streamlit.py          # Streamlit UI
+├── app_streamlit.py          # Streamlit UI (deployed on Azure)
 ├── docker-compose.yml        # Docker Compose configuration
-├── Dockerfile                # Docker image definition
+├── Dockerfile                # Docker image for API
+├── Dockerfile.streamlit      # Docker image for Streamlit
 ├── generate_data.py          # Dataset generation
 ├── train_model.py            # Model training script
 ├── zenml_pipeline.py         # ZenML pipeline
@@ -180,7 +212,8 @@ zenml[local]==0.93.0
 dvc==3.66.1
 optuna==3.0+
 streamlit==1.31.0
-plotly==6.5.0
+plotly==5.18.0
+requests==2.31.0
 ```
 
 See `requirements.txt` for complete list.
@@ -227,8 +260,8 @@ python -m dvc pull
 
 ### 5. Initialize ZenML
 ```bash
-# Initialize ZenML (use full path on Windows)
-C:\Users\YOUR_USERNAME\AppData\Roaming\Python\Python311\Scripts\zenml.exe init
+# Initialize ZenML
+zenml init
 ```
 
 ---
@@ -257,7 +290,7 @@ python zenml_pipeline.py
 python run_variations.py
 
 # View ZenML runs
-C:\Users\YOUR_USERNAME\AppData\Roaming\Python\Python311\Scripts\zenml.exe pipeline runs list
+zenml pipeline runs list
 ```
 
 ### Optimize with Optuna
@@ -285,8 +318,12 @@ curl -X POST "http://localhost:8000/predict" ^
 
 ### Streamlit Dashboard
 ```bash
+# Run locally
 streamlit run app_streamlit.py
-# Opens automatically at http://localhost:8501
+# Opens at http://localhost:8501
+
+# Or visit production deployment
+# https://bank-churn-streamlit.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/
 ```
 
 ---
@@ -317,7 +354,7 @@ python -m dvc pull
 
 ### DVC Remote Storage
 
-Currently configured with local storage at `C:\dvc-storage`. For production, configure cloud storage:
+Currently configured with local storage. For production, configure cloud storage:
 ```bash
 # AWS S3
 python -m dvc remote add -d s3remote s3://mybucket/dvcstore
@@ -366,19 +403,16 @@ def training_pipeline(n_estimators: int, max_depth: int):
 ### Run Pipeline Variations
 ```bash
 # Baseline
-python -c "from zenml_pipeline import training_pipeline; training_pipeline(n_estimators=100, max_depth=10)"
+python zenml_pipeline.py
 
-# More trees
+# Or run with custom parameters
 python -c "from zenml_pipeline import training_pipeline; training_pipeline(n_estimators=200, max_depth=15)"
-
-# Simpler model
-python -c "from zenml_pipeline import training_pipeline; training_pipeline(n_estimators=50, max_depth=5)"
 ```
 
 ### View Pipeline Runs
 ```bash
 # List all runs
-C:\Users\YOUR_USERNAME\AppData\Roaming\Python\Python311\Scripts\zenml.exe pipeline runs list
+zenml pipeline runs list
 
 # Expected output:
 # ID    INDEX   RUN NAME                              PIPELINE              STATUS
@@ -438,6 +472,10 @@ services:
     - Port: 8000
     - Model: /app/model/churn_model.pkl
     
+  streamlit:              # Streamlit UI (optional local)
+    - Port: 8501
+    - Calls: http://api:8000
+    
   mlflow:                 # MLflow tracking server
     - Port: 5000
     - Storage: ./mlruns
@@ -462,42 +500,186 @@ curl http://localhost:8000/health
 
 # Open UIs
 # API Docs: http://localhost:8000/docs
+# Streamlit: http://localhost:8501
 # MLflow: http://localhost:5000
 ```
 
-### Build Individual Image
-```bash
-# Build image
-docker build -t bank-churn-api:v1 .
+---
 
-# Run container
-docker run -p 8000:8000 bank-churn-api:v1
+## 🚀 Azure Cloud Deployment
 
-# Push to registry
-docker tag bank-churn-api:v1 your-registry/bank-churn-api:v1
-docker push your-registry/bank-churn-api:v1
+### Production URLs
+
+**Streamlit UI (Frontend):**
 ```
+https://bank-churn-streamlit.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/
+```
+
+**FastAPI (Backend):**
+```
+https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io
+```
+
+### Deployment Architecture
+```
+Internet
+   │
+   ├──▶ Streamlit Container App (Frontend)
+   │    ├── Port: 8501
+   │    ├── Region: France Central
+   │    ├── Image: acrmlopserijb22847.azurecr.io/streamlit-app:v1
+   │    └── Calls ──▶ API Container App
+   │
+   └──▶ FastAPI Container App (Backend)
+        ├── Port: 8000
+        ├── Region: France Central
+        ├── Image: acrmlopserijb22847.azurecr.io/bank-churn-api:latest
+        ├── Model: Random Forest v2
+        └── Monitoring: Application Insights
+```
+
+### Azure Resources
+
+| Resource | Name | Type | Region |
+|----------|------|------|--------|
+| Resource Group | rg-mlops-bank-churn | Resource Group | France Central |
+| Container Registry | acrmlopserijb22847 | ACR | France Central |
+| Container App Env | env-mlops-workshop | Environment | France Central |
+| API Container App | bank-churn | Container App | France Central |
+| UI Container App | bank-churn-streamlit | Container App | France Central |
+
+### Streamlit Deployment
+
+**Dockerfile.streamlit:**
+```dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+COPY app_streamlit.py .
+
+RUN pip install --no-cache-dir \
+    streamlit==1.31.0 \
+    requests==2.31.0 \
+    plotly==5.18.0 \
+    pandas==2.1.3
+
+EXPOSE 8501
+
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+
+CMD ["streamlit", "run", "app_streamlit.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true", \
+     "--browser.gatherUsageStats=false"]
+```
+
+### Deploy to Azure
+
+**1. Build and Push Streamlit Image:**
+```bash
+az acr build \
+  --registry acrmlopserijb22847 \
+  --image streamlit-app:v1 \
+  --file Dockerfile.streamlit .
+```
+
+**2. Create Streamlit Container App:**
+```bash
+az containerapp create \
+  --name bank-churn-streamlit \
+  --resource-group rg-mlops-bank-churn \
+  --environment env-mlops-workshop \
+  --image acrmlopserijb22847.azurecr.io/streamlit-app:v1 \
+  --target-port 8501 \
+  --ingress external \
+  --min-replicas 1 \
+  --max-replicas 3 \
+  --cpu 0.5 \
+  --memory 1Gi \
+  --env-vars \
+    USE_AZURE=true \
+    API_URL=https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io
+```
+
+### Version Management Demo (v1 → v2 → Rollback)
+
+**Deploy v1:**
+```bash
+# v1 is already deployed (see above)
+```
+
+**Update to v2:**
+```bash
+# 1. Modify app_streamlit.py to add "v2.0" to title
+# 2. Build v2 image
+az acr build \
+  --registry acrmlopserijb22847 \
+  --image streamlit-app:v2 \
+  --file Dockerfile.streamlit .
+
+# 3. Deploy v2
+az containerapp update \
+  --name bank-churn-streamlit \
+  --resource-group rg-mlops-bank-churn \
+  --image acrmlopserijb22847.azurecr.io/streamlit-app:v2
+```
+
+**Rollback to v1:**
+```bash
+az containerapp update \
+  --name bank-churn-streamlit \
+  --resource-group rg-mlops-bank-churn \
+  --image acrmlopserijb22847.azurecr.io/streamlit-app:v1
+```
+
+**Proof of Version Management:**
+- ✅ **v1 deployed**: Shows "AZURE CLOUD PRODUCTION DEPLOYMENT"
+- ✅ **v2 deployed**: Shows "AZURE CLOUD PRODUCTION DEPLOYMENT v2.0"
+- ✅ **Rollback successful**: Returns to v1 display
+
+This demonstrates the ability to:
+- Deploy new versions seamlessly
+- Test new features in production
+- Quickly rollback if issues arise
+- Maintain zero downtime during updates
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-### GitHub Actions Workflow
+### GitLab CI Workflow
 
 Automated pipeline triggered on every push to `main`:
 ```yaml
-jobs:
-  test:
-    - Install dependencies
-    - Run pytest tests
-    - Check code coverage
-    
-  build-and-deploy:
-    - Login to Azure
-    - Build Docker image
-    - Push to Azure Container Registry
-    - Deploy to Azure Container Apps
-    - Verify deployment
+stages:
+  - test
+  - build
+  - deploy
+
+test:
+  - Install dependencies
+  - Run pytest tests
+  - Check code coverage
+  
+build:
+  - Login to Azure
+  - Build Docker image
+  - Push to Azure Container Registry
+  
+deploy:
+  - Deploy to Azure Container Apps
+  - Verify deployment
+  - Health check
 ```
 
 ### Pipeline Stages
@@ -516,11 +698,6 @@ jobs:
    - Update Container App
    - Health check verification
    - Rollback on failure
-
-### View Pipeline Status
-```
-https://github.com/arijebouraoui/bank-churn-mlops/actions
-```
 
 ---
 
@@ -627,17 +804,6 @@ v1 (Rollback):  Churn Prob = 0.0036
 ======================================================================
 ```
 
-### Manual Version Switch
-```bash
-# Deploy v2
-copy model\optuna_best_model.pkl model\churn_model.pkl
-docker-compose restart api
-
-# Rollback to v1
-copy model\churn_model_backup.pkl model\churn_model.pkl
-docker-compose restart api
-```
-
 ---
 
 ## 📊 Monitoring
@@ -651,18 +817,6 @@ docker-compose restart api
 - Predictions (probability, risk level)
 - Errors and exceptions
 - Custom metrics
-
-### View Logs
-```bash
-# Via Azure Portal
-1. Go to Application Insights resource
-2. Click "Logs"
-3. Run query:
-   traces
-   | where message contains "prediction"
-   | project timestamp, message, customDimensions
-   | order by timestamp desc
-```
 
 ### Key Metrics
 
@@ -692,6 +846,15 @@ docker-compose restart api
 | evaluate_model | ~0.7s | Calculate metrics |
 | export_model | ~3s | Save model and metrics |
 | **Total** | **~46s** | Complete pipeline |
+
+### Deployment Status
+
+| Component | Status | URL | Region |
+|-----------|--------|-----|--------|
+| FastAPI (Backend) | ✅ Live | https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io | France Central |
+| Streamlit (Frontend) | ✅ Live | https://bank-churn-streamlit.victoriousmoss-65485a03.francecentral.azurecontainerapps.io | France Central |
+| Version Management | ✅ Tested | v1 → v2 → Rollback | Successful |
+| CI/CD Pipeline | ✅ Active | GitLab CI | Automated |
 
 ### Optuna Optimization
 
@@ -725,11 +888,11 @@ python -m dvc remote add -d myremote C:\dvc-storage --force
 
 #### ZenML Command Not Found
 ```bash
-# Use full path
-C:\Users\YOUR_USERNAME\AppData\Roaming\Python\Python311\Scripts\zenml.exe --help
+# Use zenml directly if in PATH
+zenml --help
 
-# Or add to PATH
-set PATH=%PATH%;C:\Users\YOUR_USERNAME\AppData\Roaming\Python\Python311\Scripts
+# Or use full path
+C:\Users\YOUR_USERNAME\AppData\Roaming\Python\Python311\Scripts\zenml.exe --help
 ```
 
 #### Docker Container Won't Start
@@ -752,6 +915,16 @@ docker ps
 
 # Restart container
 docker-compose restart api
+```
+
+#### Streamlit Not Connecting to API
+```bash
+# Check environment variables
+echo %USE_AZURE%
+echo %API_URL%
+
+# Test API directly
+curl https://bank-churn.victoriousmoss-65485a03.francecentral.azurecontainerapps.io/health
 ```
 
 ---
@@ -814,6 +987,7 @@ This project is licensed under the MIT License.
 - **Workshop MLOps avec Azure** - [nevermind78](https://nevermind78.github.io/mlops-workshop-docs/)
 - **Bank Churn Dataset** - Synthetic dataset generated for educational purposes
 - **MLOps Community** - For tools and best practices
+- **Dr. Salah Gontara** - MLOps Course Instructor
 
 ---
 
@@ -836,11 +1010,12 @@ This project was developed as part of the **MLOps Mini-Project** for the MLOps 2
 - ✅ Pipeline orchestration with ZenML
 - ✅ Hyperparameter optimization with Optuna
 - ✅ Containerization with Docker
-- ✅ CI/CD automation with GitHub Actions
-- ✅ Production deployment on Azure
+- ✅ CI/CD automation with GitLab CI
+- ✅ Production deployment on Azure (API + UI)
 - ✅ Monitoring and observability
-- ✅ Model versioning and rollback
+- ✅ Model versioning and rollback (v1 → v2 → Rollback)
+- ✅ Interactive web interface with Streamlit
 
 ---
 
-**Made with ❤️ using MLOps best practices**
+**Made with ❤️ using MLOps best practices | Deployed on Azure Cloud ☁️**
