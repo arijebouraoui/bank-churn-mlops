@@ -188,7 +188,7 @@ bank-churn-mlops/
 ├── optuna_optimization.py    # Optuna hyperparameter tuning
 ├── deploy_versions.py        # Model version deployment demo
 ├── requirements.txt          # Python dependencies
-└── README.md                 # This file
+└── README.md                 
 ```
 
 ---
