@@ -14,6 +14,8 @@ from opencensus.ext.azure.log_exporter import AzureLogHandler
 from app.models import CustomerFeatures, PredictionResponse, HealthResponse
 from app.drift_detect import detect_drift
 
+from prometheus_client import Counter, Histogram, Gauge, make_asgi_app
+
 # -------------------------------------------------
 # Logging & Application Insights
 # -------------------------------------------------
@@ -44,6 +46,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# -------------------------------------------------
+# Prometheus Metrics (AFTER app creation)
+# -------------------------------------------------
+prediction_counter = Counter('predictions_total', 'Total predictions')
+prediction_proba = Histogram('prediction_probability', 'Prediction probabilities')
+high_risk_gauge = Gauge('high_risk_predictions', 'Number of high risk predictions')
+
+# Mount metrics endpoint
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 # -------------------------------------------------
 # Chargement du modèle
@@ -113,13 +126,23 @@ def health():
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(features: CustomerFeatures):
+    if model is None:
+        raise HTTPException(status_code=503, detail="Modèle non chargé")
+    
     features_dict = features.dict()
     features_hash = hash_features(features_dict)
     features_json = json.dumps(features_dict)
 
     # Utilisation du cache
     result = predict_cached(features_hash, features_json)
-    logger.info(f"Prediction - Hash: {features_hash[:8]}")
+    
+    # Record Prometheus metrics
+    prediction_counter.inc()
+    prediction_proba.observe(result["churn_probability"])
+    if result["churn_probability"] > 0.7:
+        high_risk_gauge.inc()
+    
+    logger.info(f"Prediction - Hash: {features_hash[:8]}, Proba: {result['churn_probability']}")
     return result
 
 @app.post("/drift/check", tags=["Monitoring"])
@@ -148,9 +171,11 @@ def check_drift(threshold: float = 0.05):
         return {
             "status": "success",
             "features_analyzed": len(results),
-            "features_drifted": len(drifted)
+            "features_drifted": len(drifted),
+            "drifted_features": drifted,
+            "drift_percentage": round(drift_pct, 2)
         }
-    except Exception:
+    except Exception as e:
         tb = traceback.format_exc()
-        logger.error(tb)
-        raise HTTPException(status_code=500, detail="Erreur drift detection")
+        logger.error(f"Drift detection error: {tb}")
+        raise HTTPException(status_code=500, detail=f"Erreur drift detection: {str(e)}")
