@@ -1,0 +1,12 @@
+================================================ 
+           DEPLOYMENT COMPARISON 
+================================================ 
+ 
+Version    | Probability | Prediction | Status 
+------------------------------------------------ 
+v1 Baseline    | 0.0036      | No Churn   | Original 
+v2 Optimized   | 0.0038      | No Churn   | Deployed 
+v1 Rollback    | 0.0036      | No Churn   | Restored 
+ 
+Result: Rollback SUCCESSFUL (v1 = Rollback) 
+================================================ 

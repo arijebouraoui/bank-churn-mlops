@@ -1,7 +1,7 @@
 # API Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
+pydantic==1.10.13
 
 # Machine Learning
 scikit-learn==1.3.2
@@ -12,7 +12,7 @@ joblib==1.3.2
 # MLflow
 mlflow==2.8.1
 
-# ZenML
+# ZenML (compatible with Pydantic 1.x)
 zenml==0.55.5
 
 # Optuna
